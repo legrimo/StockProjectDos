@@ -4,6 +4,7 @@ from utils import get_stock_data, get_key_metrics
 import pandas as pd
 import base64
 from datetime import datetime
+import uuid
 
 # Page config
 st.set_page_config(
@@ -12,12 +13,56 @@ st.set_page_config(
     layout="wide"
 )
 
+# Initialize session state for stock rules
+if 'stock_rules' not in st.session_state:
+    st.session_state.stock_rules = []
+
 # Load custom CSS
 with open("styles.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # Header
 st.title("📈 Stock Data Visualization")
+
+# Stock Rules Section
+st.header("Stock Rules")
+with st.form("stock_rule_form"):
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        rule_symbol = st.text_input("Stock Symbol", placeholder="e.g., AAPL").upper()
+    with col2:
+        percentage_change = st.number_input("Percentage Change (%)", min_value=-100.0, max_value=100.0, value=0.0, step=0.1)
+    
+    submitted = st.form_submit_button("Add Rule")
+    if submitted and rule_symbol:
+        new_rule = {
+            "id": str(uuid.uuid4()),
+            "symbol": rule_symbol,
+            "percentage": percentage_change
+        }
+        st.session_state.stock_rules.append(new_rule)
+        st.success(f"Rule added for {rule_symbol}")
+
+# Display rules table
+if st.session_state.stock_rules:
+    st.subheader("Current Rules")
+    rules_df = pd.DataFrame(st.session_state.stock_rules)
+    rules_df = rules_df[["symbol", "percentage"]]
+    rules_df.columns = ["Symbol", "Percentage Change (%)"]
+    
+    # Display each rule with a delete button
+    for idx, rule in enumerate(st.session_state.stock_rules):
+        col1, col2, col3 = st.columns([2, 2, 1])
+        with col1:
+            st.write(f"Symbol: {rule['symbol']}")
+        with col2:
+            st.write(f"Percentage: {rule['percentage']}%")
+        with col3:
+            if st.button("Delete", key=f"delete_{rule['id']}"):
+                st.session_state.stock_rules.pop(idx)
+                st.rerun()
+    
+st.markdown("---")
 
 # Input section
 col1, col2 = st.columns([2, 1])
