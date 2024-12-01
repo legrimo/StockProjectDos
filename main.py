@@ -13,9 +13,11 @@ st.set_page_config(
     layout="wide"
 )
 
-# Initialize session state for stock rules
+# Initialize session state
 if 'stock_rules' not in st.session_state:
     st.session_state.stock_rules = []
+if 'email_list' not in st.session_state:
+    st.session_state.email_list = []
 
 # Load custom CSS
 with open("styles.css") as f:
@@ -23,6 +25,36 @@ with open("styles.css") as f:
 
 # Header
 st.title("📈 Stock Data Visualization")
+
+# Email Management Section
+st.header("Email Management")
+col1, col2 = st.columns([3, 1])
+with col1:
+    new_email = st.text_input("Enter Email Address", placeholder="example@email.com")
+with col2:
+    if st.button("Add Email"):
+        if new_email:
+            if '@' in new_email and '.' in new_email:  # Basic email validation
+                if new_email in st.session_state.email_list:
+                    st.error("This email is already in the list!")
+                else:
+                    st.session_state.email_list.append(new_email)
+                    st.success("Email added successfully!")
+            else:
+                st.error("Please enter a valid email address")
+
+if st.session_state.email_list:
+    st.subheader("Current Email List")
+    for idx, email in enumerate(st.session_state.email_list):
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            st.write(email)
+        with col2:
+            if st.button("Remove", key=f"remove_email_{idx}"):
+                st.session_state.email_list.pop(idx)
+                st.rerun()
+
+st.markdown("---")
 
 # Stock Rules Section
 st.header("Stock Rules")
