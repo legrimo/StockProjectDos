@@ -673,6 +673,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "pandas" },
     { name = "plotly" },
+    { name = "secure-smtplib" },
     { name = "streamlit" },
     { name = "yfinance" },
 ]
@@ -681,6 +682,7 @@ dependencies = [
 requires-dist = [
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "plotly", specifier = ">=5.24.1" },
+    { name = "secure-smtplib", specifier = ">=0.1.1" },
     { name = "streamlit", specifier = ">=1.40.2" },
     { name = "yfinance", specifier = ">=0.2.50" },
 ]
@@ -758,6 +760,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/c8/d0/48154c152f9adb8304b21d867d28e79be3b352633fb195c03c7107a4da9a/rpds_py-0.21.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:ee1e4fc267b437bb89990b2f2abf6c25765b89b72dd4a11e21934df449e0c976", size = 530540 },
     { url = "https://files.pythonhosted.org/packages/50/e8/78847f4e112e99fd5b7bc30fea3e4a44c20b811473d6755f944c5bf0aec7/rpds_py-0.21.0-cp313-none-win32.whl", hash = "sha256:0c025820b78817db6a76413fff6866790786c38f95ea3f3d3c93dbb73b632202", size = 202604 },
     { url = "https://files.pythonhosted.org/packages/60/31/083e6337775e133fb0217ed0ab0752380efa6e5112f2250d592d4135a228/rpds_py-0.21.0-cp313-none-win_amd64.whl", hash = "sha256:320c808df533695326610a1b6a0a6e98f033e49de55d7dc36a13c8a30cfa756e", size = 220448 },
+]
+
+[[package]]
+name = "secure-smtplib"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/1f/86/30df3f748dd43c064bed3059f116a32adc71622087b1d4eb379e2fb663f7/secure-smtplib-0.1.1.tar.gz", hash = "sha256:3d4903f6612626ccd9b77ef05313cb3c3952a59a4d756cda2377b272fabad8b9", size = 5912 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1c/bd/3c602fbfa16cad120e93e4b0286d89aad0ec2ce163cdf5410a6ce4cadba5/secure_smtplib-0.1.1-py2.py3-none-any.whl", hash = "sha256:645ea0a341f306fa3307c8fe1169765c417ff363db9946fa69f3669a9b718069", size = 3384 },
 ]
 
 [[package]]

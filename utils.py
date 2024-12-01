@@ -72,16 +72,45 @@ def send_email_notification(email_list: list, triggered_stocks: list):
     if not email_list or not triggered_stocks:
         return
     
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    import os
+
+    # Get email configuration from environment variables
+    smtp_server = os.getenv('SMTP_SERVER')
+    smtp_port = int(os.getenv('SMTP_PORT', '587'))
+    sender_email = os.getenv('EMAIL_USERNAME')
+    password = os.getenv('EMAIL_PASSWORD')
+
+    if not all([smtp_server, smtp_port, sender_email, password]):
+        print("Email configuration is incomplete. Please check environment variables.")
+        return
+
     symbols = ", ".join([stock['symbol'] for stock in triggered_stocks])
-    subject = f"Test Notification Alert: Stock Price change {symbols}"
+    subject = f"Stock Price Alert: {symbols}"
     
-    body = "The following stocks rules were triggered due to a price movement:\n\n"
+    body = "The following stock rules were triggered due to price movements:\n\n"
     for stock in triggered_stocks:
         body += f"- {stock['symbol']}: {stock['price_change_pct']:+.2f}% (Threshold: {stock['threshold']:+.2f}%)\n"
-    
-    # For demonstration, print the email content
-    print("\nEmail Notification:")
-    print(f"To: {', '.join(email_list)}")
-    print(f"Subject: {subject}")
-    print(f"Body:\n{body}")
-    # In production, implement actual email sending logic here
+
+    for recipient in email_list:
+        try:
+            # Create message
+            message = MIMEMultipart()
+            message["From"] = sender_email
+            message["To"] = recipient
+            message["Subject"] = subject
+
+            # Add body to email
+            message.attach(MIMEText(body, "plain"))
+
+            # Create SMTP session and send email
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()
+                server.login(sender_email, password)
+                server.send_message(message)
+            
+            print(f"Successfully sent email notification to {recipient}")
+        except Exception as e:
+            print(f"Failed to send email to {recipient}: {str(e)}")
