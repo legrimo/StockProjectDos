@@ -79,11 +79,17 @@ def send_email_notification(email_list: list, triggered_stocks: list):
 
     # Get email configuration from environment variables
     smtp_server = os.getenv('SMTP_SERVER')
-    smtp_port = int(os.getenv('SMTP_PORT', '587'))
+    smtp_port_str = os.getenv('SMTP_PORT', '587')
     sender_email = os.getenv('EMAIL_USERNAME')
     password = os.getenv('EMAIL_PASSWORD')
 
-    if not all([smtp_server, smtp_port, sender_email, password]):
+    try:
+        smtp_port = int(smtp_port_str)
+    except ValueError:
+        print(f"Invalid SMTP port value: {smtp_port_str}")
+        return
+
+    if not all([smtp_server, sender_email, password]):
         print("Email configuration is incomplete. Please check environment variables.")
         return
 
