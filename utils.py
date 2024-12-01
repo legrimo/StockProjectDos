@@ -112,11 +112,19 @@ def send_email_notification(email_list: list, triggered_stocks: list):
             message.attach(MIMEText(body, "plain"))
 
             # Create SMTP session and send email
+            print(f"Attempting to connect to SMTP server: {smtp_server}:{smtp_port}")
             with smtplib.SMTP(smtp_server, smtp_port) as server:
+                print("Starting TLS connection...")
                 server.starttls()
+                print("Attempting login...")
                 server.login(sender_email, password)
+                print("Sending message...")
                 server.send_message(message)
-            
-            print(f"Successfully sent email notification to {recipient}")
+                print(f"Successfully sent email notification to {recipient}")
+        except smtplib.SMTPAuthenticationError:
+            print("SMTP Authentication failed. Please check your email credentials.")
+        except smtplib.SMTPConnectError:
+            print(f"Failed to connect to SMTP server: {smtp_server}:{smtp_port}")
         except Exception as e:
             print(f"Failed to send email to {recipient}: {str(e)}")
+            print(f"Error type: {type(e).__name__}")
