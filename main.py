@@ -1,6 +1,11 @@
 import streamlit as st
 import plotly.graph_objects as go
-from utils import get_stock_data, get_key_metrics
+from utils import (
+    get_stock_data,
+    get_key_metrics,
+    check_stock_rule,
+    send_email_notification
+)
 import pandas as pd
 import base64
 from datetime import datetime
