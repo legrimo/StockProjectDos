@@ -97,15 +97,42 @@ if st.session_state.stock_rules:
 st.markdown("---")
 
 # Input section
-col1, col2 = st.columns([2, 1])
-with col1:
-    symbol = st.text_input("Enter Stock Symbol (e.g., AAPL, GOOGL)", value="AAPL").upper()
-with col2:
-    period = st.selectbox(
-        "Select Time Period",
-        options=["1mo", "3mo", "6mo", "1y", "2y", "5y"],
-        index=3
-    )
+market_tab, simulation_tab = st.tabs(["Market Data", "Stock Price Simulation"])
+
+with market_tab:
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        symbol = st.text_input("Enter Stock Symbol (e.g., AAPL, GOOGL)", value="AAPL").upper()
+    with col2:
+        period = st.selectbox(
+            "Select Time Period",
+            options=["1mo", "3mo", "6mo", "1y", "2y", "5y"],
+            index=3
+        )
+
+with simulation_tab:
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        sim_symbol = st.text_input("Enter Stock Symbol for Simulation", value="AAPL", key="sim_symbol").upper()
+    with col2:
+        sim_price = st.number_input("Enter Simulated Price ($)", min_value=0.01, value=100.00, step=0.01)
+    
+    if st.button("Run Simulation"):
+        sim_hist, sim_info = get_stock_data(sim_symbol)
+        if sim_hist is not None and sim_info is not None:
+            market_price = sim_hist['Close'].iloc[-1]
+            price_diff = sim_price - market_price
+            price_change_pct = (price_diff / market_price) * 100
+            
+            st.subheader("Simulation Results")
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Market Price", f"${market_price:.2f}")
+            col2.metric("Simulated Price", f"${sim_price:.2f}")
+            col3.metric("Difference", 
+                       f"${price_diff:+.2f}",
+                       f"{price_change_pct:+.2f}%")
+        else:
+            st.error(f"Error: Could not fetch data for symbol {sim_symbol}")
 
 if symbol:
     # Fetch data
