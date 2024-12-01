@@ -73,24 +73,33 @@ def send_email_notification(email_list: list, triggered_stocks: list):
         return
     
     import smtplib
+    import ssl
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
     import os
 
     # Get email configuration from environment variables
     smtp_server = os.getenv('SMTP_SERVER')
-    smtp_port_str = os.getenv('SMTP_PORT', '587')
+    smtp_port_str = os.getenv('SMTP_PORT')
     sender_email = os.getenv('EMAIL_USERNAME')
     password = os.getenv('EMAIL_PASSWORD')
 
-    try:
-        smtp_port = int(smtp_port_str)
-    except ValueError:
-        print(f"Invalid SMTP port value: {smtp_port_str}")
-        return
+    # Default port based on common SMTP servers
+    smtp_port = 587
+    if smtp_port_str:
+        try:
+            smtp_port = int(smtp_port_str)
+        except ValueError:
+            print(f"Warning: Invalid SMTP port value: {smtp_port_str}, using default port 587")
+    
+    print(f"Debug: Starting email notification process...")
+    print(f"Debug: Using SMTP settings - Server: {smtp_server}, Port: {smtp_port}, From: {sender_email}")
 
     if not all([smtp_server, sender_email, password]):
-        print("Email configuration is incomplete. Please check environment variables.")
+        print("Error: Email configuration is incomplete. Missing required settings:")
+        if not smtp_server: print("- SMTP_SERVER not set")
+        if not sender_email: print("- EMAIL_USERNAME not set")
+        if not password: print("- EMAIL_PASSWORD not set")
         return
 
     symbols = ", ".join([stock['symbol'] for stock in triggered_stocks])
@@ -112,19 +121,31 @@ def send_email_notification(email_list: list, triggered_stocks: list):
             message.attach(MIMEText(body, "plain"))
 
             # Create SMTP session and send email
-            print(f"Attempting to connect to SMTP server: {smtp_server}:{smtp_port}")
+            print(f"Debug: Attempting to connect to SMTP server: {smtp_server}:{smtp_port}")
+            
+            context = ssl.create_default_context()
             with smtplib.SMTP(smtp_server, smtp_port) as server:
-                print("Starting TLS connection...")
-                server.starttls()
-                print("Attempting login...")
+                server.set_debuglevel(1)  # Enable debug output
+                print("Debug: Starting TLS connection...")
+                server.starttls(context=context)
+                
+                print("Debug: Attempting login...")
                 server.login(sender_email, password)
-                print("Sending message...")
+                
+                print("Debug: Sending message...")
                 server.send_message(message)
-                print(f"Successfully sent email notification to {recipient}")
-        except smtplib.SMTPAuthenticationError:
-            print("SMTP Authentication failed. Please check your email credentials.")
-        except smtplib.SMTPConnectError:
-            print(f"Failed to connect to SMTP server: {smtp_server}:{smtp_port}")
+                print(f"Success: Email notification sent to {recipient}")
+                
+        except smtplib.SMTPAuthenticationError as e:
+            print(f"Error: SMTP Authentication failed. Please check your credentials.")
+            print(f"Debug: Authentication error details - {str(e)}")
+        except smtplib.SMTPConnectError as e:
+            print(f"Error: Failed to connect to SMTP server: {smtp_server}:{smtp_port}")
+            print(f"Debug: Connection error details - {str(e)}")
+        except smtplib.SMTPServerDisconnected as e:
+            print(f"Error: Server disconnected. This might be due to connection timeout or server issues.")
+            print(f"Debug: Disconnection details - {str(e)}")
         except Exception as e:
-            print(f"Failed to send email to {recipient}: {str(e)}")
-            print(f"Error type: {type(e).__name__}")
+            print(f"Error: Failed to send email to {recipient}")
+            print(f"Debug: Error type: {type(e).__name__}")
+            print(f"Debug: Error details - {str(e)}")
