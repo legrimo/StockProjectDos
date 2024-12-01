@@ -144,6 +144,8 @@ with simulation_tab:
         
         if st.button("Run Simulation"):
             st.subheader("Simulation Results")
+            triggered_stocks = []
+            
             for entry in st.session_state.simulation_entries:
                 sim_hist, sim_info = get_stock_data(entry['symbol'])
                 if sim_hist is not None and sim_info is not None:
@@ -158,8 +160,29 @@ with simulation_tab:
                     col3.metric("Difference", 
                             f"${price_diff:+.2f}",
                             f"{price_change_pct:+.2f}%")
+                    
+                    # Check if any rules are triggered
+                    rule_triggered, threshold = check_stock_rule(
+                        entry['symbol'], 
+                        price_change_pct, 
+                        st.session_state.stock_rules
+                    )
+                    
+                    if rule_triggered:
+                        st.warning("⚠️ This result triggered a rule!")
+                        triggered_stocks.append({
+                            'symbol': entry['symbol'],
+                            'price_change_pct': price_change_pct,
+                            'threshold': threshold
+                        })
+                    else:
+                        st.info("ℹ️ There are no rules triggered for this stock.")
                 else:
                     st.error(f"Error: Could not fetch data for symbol {entry['symbol']}")
+            
+            # Send email notifications if any rules were triggered
+            if triggered_stocks:
+                send_email_notification(st.session_state.email_list, triggered_stocks)
 
 if symbol:
     # Fetch data
