@@ -18,6 +18,8 @@ if 'stock_rules' not in st.session_state:
     st.session_state.stock_rules = []
 if 'email_list' not in st.session_state:
     st.session_state.email_list = []
+if 'simulation_entries' not in st.session_state:
+    st.session_state.simulation_entries = []
 
 # Load custom CSS
 with open("styles.css") as f:
@@ -111,28 +113,53 @@ with market_tab:
         )
 
 with simulation_tab:
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        sim_symbol = st.text_input("Enter Stock Symbol for Simulation", value="AAPL", key="sim_symbol").upper()
-    with col2:
-        sim_price = st.number_input("Enter Simulated Price ($)", min_value=0.01, value=100.00, step=0.01)
+    # Add new entry form
+    st.subheader("Add Simulation Entry")
+    with st.form("add_simulation_entry"):
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            sim_symbol = st.text_input("Stock Symbol", value="AAPL").upper()
+        with col2:
+            sim_price = st.number_input("Simulated Price ($)", min_value=0.01, value=100.00, step=0.01)
+        
+        if st.form_submit_button("Add Entry"):
+            if sim_symbol:
+                new_entry = {"symbol": sim_symbol, "price": sim_price}
+                st.session_state.simulation_entries.append(new_entry)
+                st.success(f"Added simulation entry for {sim_symbol}")
     
-    if st.button("Run Simulation"):
-        sim_hist, sim_info = get_stock_data(sim_symbol)
-        if sim_hist is not None and sim_info is not None:
-            market_price = sim_hist['Close'].iloc[-1]
-            price_diff = sim_price - market_price
-            price_change_pct = (price_diff / market_price) * 100
-            
+    # Display current entries
+    if st.session_state.simulation_entries:
+        st.subheader("Current Simulation Entries")
+        for idx, entry in enumerate(st.session_state.simulation_entries):
+            col1, col2, col3 = st.columns([2, 2, 1])
+            with col1:
+                st.write(f"Symbol: {entry['symbol']}")
+            with col2:
+                st.write(f"Price: ${entry['price']:.2f}")
+            with col3:
+                if st.button("Remove", key=f"remove_sim_{idx}"):
+                    st.session_state.simulation_entries.pop(idx)
+                    st.rerun()
+        
+        if st.button("Run Simulation"):
             st.subheader("Simulation Results")
-            col1, col2, col3 = st.columns(3)
-            col1.metric("Market Price", f"${market_price:.2f}")
-            col2.metric("Simulated Price", f"${sim_price:.2f}")
-            col3.metric("Difference", 
-                       f"${price_diff:+.2f}",
-                       f"{price_change_pct:+.2f}%")
-        else:
-            st.error(f"Error: Could not fetch data for symbol {sim_symbol}")
+            for entry in st.session_state.simulation_entries:
+                sim_hist, sim_info = get_stock_data(entry['symbol'])
+                if sim_hist is not None and sim_info is not None:
+                    market_price = sim_hist['Close'].iloc[-1]
+                    price_diff = entry['price'] - market_price
+                    price_change_pct = (price_diff / market_price) * 100
+                    
+                    st.write(f"### {entry['symbol']}")
+                    col1, col2, col3 = st.columns(3)
+                    col1.metric("Market Price", f"${market_price:.2f}")
+                    col2.metric("Simulated Price", f"${entry['price']:.2f}")
+                    col3.metric("Difference", 
+                            f"${price_diff:+.2f}",
+                            f"{price_change_pct:+.2f}%")
+                else:
+                    st.error(f"Error: Could not fetch data for symbol {entry['symbol']}")
 
 if symbol:
     # Fetch data
