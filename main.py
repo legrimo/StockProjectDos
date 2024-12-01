@@ -13,7 +13,7 @@ import uuid
 
 # Page config
 st.set_page_config(
-    page_title="Stock Data Visualization",
+    page_title="Stock Data Viz Tool",
     page_icon="📈",
     layout="wide"
 )
@@ -31,7 +31,7 @@ with open("styles.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # Header
-st.title("📈 Stock Data Visualization")
+st.title("📈 Stock Data Viz Tool")
 
 # Email Management Section
 st.header("Email Management")
