@@ -1,4 +1,12 @@
 import pytest
+import sys
+import os
+
+# Add the project root directory to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 from utils import check_stock_rule, get_stock_data, send_email_notification
 
 def test_check_stock_rule_triggers():
