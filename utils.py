@@ -124,17 +124,19 @@ def send_email_notification(email_list: list, triggered_stocks: list):
             print(f"Debug: Attempting to connect to SMTP server: {smtp_server}:{smtp_port}")
             
             context = ssl.create_default_context()
-            with smtplib.SMTP(smtp_server, smtp_port) as server:
-                server.set_debuglevel(1)  # Enable debug output
-                print("Debug: Starting TLS connection...")
-                server.starttls(context=context)
-                
-                print("Debug: Attempting login...")
-                server.login(sender_email, password)
-                
-                print("Debug: Sending message...")
-                server.send_message(message)
-                print(f"Success: Email notification sent to {recipient}")
+            server = smtplib.SMTP(smtp_server, smtp_port)
+            server.set_debuglevel(1)  # Enable debug output
+            print("Debug: Starting TLS connection...")
+            server.starttls(context=context)
+            
+            print("Debug: Attempting login...")
+            server.login(sender_email, password)
+            
+            print("Debug: Sending message...")
+            server.send_message(message)
+            print(f"Success: Email notification sent to {recipient}")
+            
+            server.quit()  # Properly close the connection
                 
         except smtplib.SMTPAuthenticationError as e:
             print(f"Error: SMTP Authentication failed. Please check your credentials.")
