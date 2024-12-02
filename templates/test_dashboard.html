@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Notification Test Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Notification Test Dashboard</h1>
+        <button id="runTests">Run Tests</button>
+        <div id="results" class="hidden">
+            <h2>Test Results</h2>
+            <pre id="output"></pre>
+        </div>
+    </div>
+    <script>
+        document.getElementById('runTests').addEventListener('click', async () => {
+            const results = document.getElementById('results');
+            const output = document.getElementById('output');
+            results.classList.remove('hidden');
+            output.innerText = 'Running tests...';
+            
+            try {
+                const response = await fetch('/run_tests', {method: 'POST'});
+                const data = await response.json();
+                output.innerHTML = data.output + (data.error ? '\nErrors:\n' + data.error : '');
+                output.className = data.success ? 'success' : 'error';
+            } catch (err) {
+                output.innerHTML = 'Error running tests: ' + err.message;
+                output.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>

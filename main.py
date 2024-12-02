@@ -1,4 +1,5 @@
 import streamlit as st
+from pathlib import Path
 import plotly.graph_objects as go
 from utils import (
     get_stock_data,
@@ -188,6 +189,10 @@ with simulation_tab:
             # Send email notifications if any rules were triggered
             if triggered_stocks:
                 send_email_notification(st.session_state.email_list, triggered_stocks)
+
+
+
+
 
 if symbol:
     # Fetch data
